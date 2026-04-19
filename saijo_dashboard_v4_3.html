@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>西条市 統計ダッシュボード 2011〜2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:#eef4f0;color:#222;font-size:14px;line-height:1.6}
+.wrap{max-width:1100px;margin:0 auto;padding:1rem}
+.hero{background:#0a5c4a;color:#fff;border-radius:14px;padding:1.5rem 2rem;margin-bottom:1.25rem}
+.hero h1{font-size:20px;font-weight:700;letter-spacing:.06em;margin-bottom:3px}
+.hero p{font-size:11px;opacity:.65;letter-spacing:.1em;margin-bottom:1.25rem}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:12px 14px}
+.kpi .lb{font-size:10px;opacity:.72;margin-bottom:5px}
+.kpi .vl{font-size:20px;font-weight:700;line-height:1}
+.kpi .un{font-size:10px;opacity:.65;margin-top:3px}
+.kpi .ch{font-size:10px;margin-top:5px;padding:2px 7px;border-radius:12px;display:inline-block}
+.dn{background:rgba(255,70,50,.32);color:#ffb0a0}
+.up{background:rgba(60,210,130,.3);color:#8fffc5}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+.nav button{padding:7px 16px;border-radius:22px;border:1.5px solid #b0cfc5;background:#fff;color:#555;font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.nav button:hover{background:#e0f0eb;border-color:#0a5c4a;color:#0a5c4a}
+.nav button.on{background:#0a5c4a;color:#fff;border-color:#0a5c4a;font-weight:700}
+.sec{display:none}.sec.on{display:block}
+.card{background:#fff;border:1px solid #cce0d8;border-radius:12px;padding:1.25rem;margin-bottom:.9rem;box-shadow:0 1px 3px rgba(0,60,40,.05)}
+.card h3{font-size:13px;font-weight:700;color:#1a3a30;margin-bottom:3px}
+.card .nt{font-size:11px;color:#888;margin-bottom:.75rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem}
+.ctrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:.7rem 1rem;background:#f0faf5;border-radius:8px;margin-bottom:.75rem;border:1px solid #c5e0d5}
+.ctrl label{font-size:12px;color:#445;font-weight:500}
+.ctrl select{padding:5px 10px;border-radius:7px;border:1px solid #a8cfbf;background:#fff;color:#222;font-size:12px;font-family:inherit;cursor:pointer}
+.ctrl input[type=range]{flex:1;min-width:100px;accent-color:#0a5c4a}
+.ctrl .yr{font-size:14px;font-weight:700;color:#0a5c4a;min-width:42px}
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:11px;color:#666}
+.leg span{display:flex;align-items:center;gap:5px}
+.leg i{width:12px;height:12px;border-radius:3px;display:inline-block;flex-shrink:0}
+.br{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:.75rem}
+.br button{padding:5px 13px;font-size:11px;border-radius:7px;border:1px solid #b0cfc5;background:#fff;color:#555;cursor:pointer;font-family:inherit;transition:all .2s}
+.br button:hover{background:#e0f0eb}
+.br button.on{background:#0a5c4a;color:#fff;border-color:#0a5c4a}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:.75rem}
+.sc{background:#f0f9f5;border-radius:9px;padding:.9rem;text-align:center;border:1px solid #c8e4da}
+.sc .sv{font-size:18px;font-weight:700;color:#0a5c4a}
+.sc .sl{font-size:10px;color:#778;margin-top:3px}
+.hm-wrap{overflow-x:auto;margin-top:.5rem}
+table.hm{border-collapse:separate;border-spacing:2px;font-size:10px;min-width:700px}
+table.hm th{padding:5px 7px;text-align:center;color:#445;font-weight:500;white-space:nowrap;background:#f0faf5;font-size:10px}
+table.hm th.rh{text-align:left;font-size:11px}
+table.hm td{padding:4px 6px;text-align:center;border-radius:3px;cursor:pointer;white-space:nowrap;font-size:10px;transition:opacity .15s}
+table.hm td:hover{opacity:.75;outline:2px solid #0a5c4a}
+.hm-detail{font-size:12px;color:#334;margin-bottom:8px;padding:8px 14px;background:#f0f9f5;border-radius:7px;border-left:3px solid #0a5c4a;min-height:32px}
+.corr-info{font-size:12px;color:#334;margin-bottom:8px;padding:8px 14px;background:#f0f9f5;border-radius:7px;border-left:3px solid #0a5c4a}
+.play-btn{width:38px;height:38px;border-radius:50%;border:2px solid #0a5c4a;background:#fff;color:#0a5c4a;cursor:pointer;font-size:16px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;transition:all .2s}
+.play-btn:hover{background:#0a5c4a;color:#fff}
+.yr-badge{font-size:30px;font-weight:700;color:#0a5c4a;min-width:70px;display:inline-block}
+.anim-stat{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem;font-size:12px;color:#445;background:#f0f9f5;padding:.75rem 1rem;border-radius:8px}
+.anim-stat strong{color:#0a5c4a;font-weight:700}
+.csv-btn{padding:5px 13px;font-size:11px;border-radius:7px;border:1px solid #0a5c4a;background:#fff;color:#0a5c4a;cursor:pointer;font-family:inherit;margin-left:auto}
+.csv-btn:hover{background:#0a5c4a;color:#fff}
+.src{font-size:10px;color:#aaa;text-align:right;margin-top:1rem;padding-top:.75rem;border-top:1px solid #dde8e4}
+.note-badge{display:inline-block;font-size:9px;background:#fff3cd;color:#856404;border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+@media(max-width:640px){.kpi-row{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <h1>西条市 統計ダッシュボード</h1>
+  <p>SAIJO CITY · 愛媛県 · 2011〜2026年版 公式統計データ（実測値）</p>
+  <div class="kpi-row">
+    <div class="kpi"><div class="lb">総人口</div><div class="vl">101,711</div><div class="un">人（令和8年3月末）</div><div class="ch dn">前月比 −284</div></div>
+    <div class="kpi"><div class="lb">世帯数</div><div class="vl">50,817</div><div class="un">世帯</div><div class="ch up">前月比 +49</div></div>
+    <div class="kpi"><div class="lb">製造品出荷額</div><div class="vl">963,346</div><div class="un">百万円（2016年・最大値）</div><div class="ch up">四国最大規模</div></div>
+    <div class="kpi"><div class="lb">救急出動件数</div><div class="vl">7,146</div><div class="un">件（2025年）</div><div class="ch dn">増加傾向</div></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="on" onclick="showS('pop',this)">人口・世帯</button>
+  <button onclick="showS('age',this)">年齢構成</button>
+  <button onclick="showS('ind',this)">産業・製造</button>
+  <button onclick="showS('agr',this)">農林水産</button>
+  <button onclick="showS('fin',this)">財政・税収</button>
+  <button onclick="showS('edu',this)">教育・福祉</button>
+  <button onclick="showS('obs',this)">観光・文化・防災</button>
+  <button onclick="showS('cor',this)">相関分析</button>
+  <button onclick="showS('hm',this)">ヒートマップ</button>
+  <button onclick="showS('anim',this)">アニメーション</button>
+</div>
+
+<!-- 人口・世帯 -->
+<div id="s-pop" class="sec on">
+  <div class="card">
+    <h3>人口・世帯数の推移</h3>
+    <div class="nt">住民基本台帳 各年11月1日現在（2026年のみ3月末）/ 西条市統計データ各年版</div>
+    <div class="ctrl">
+      <label>開始：</label>
+      <select id="py1" onchange="rPop()"><option>2011</option><option>2012</option><option>2013</option><option>2014</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option></select>
+      <label>終了：</label>
+      <select id="py2" onchange="rPop()"><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option selected>2026</option></select>
+      <button class="csv-btn" onclick="dlCSV('pop')">CSV出力</button>
+    </div>
+    <div class="leg"><span><i style="background:#1d9e75"></i>総人口（左軸）</span><span><i style="background:#378add"></i>世帯数（右軸）</span></div>
+    <div style="position:relative;width:100%;height:280px"><canvas id="cPop"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>人口動態（出生・死亡・転入・転出）</h3>
+      <div class="nt">西条市統計データ各年版 表12 ／ ※2025〜2026年は未収録</div>
+      <div class="leg"><span><i style="background:#1d9e75"></i>出生</span><span><i style="background:#e24b4a"></i>死亡</span><span><i style="background:#378add"></i>転入</span><span><i style="background:#ef9f27"></i>転出</span></div>
+      <div style="position:relative;width:100%;height:250px"><canvas id="cVit"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>2年度ピンポイント比較</h3>
+      <div class="nt">人口・世帯・男女を2年度で比較</div>
+      <div class="ctrl" style="flex-direction:column;align-items:flex-start;gap:8px">
+        <div style="display:flex;gap:10px;align-items:center"><label>年度A：</label><select id="cA" onchange="rCmp()"><option>2011</option><option>2013</option><option>2015</option><option>2017</option><option selected>2019</option><option>2021</option></select></div>
+        <div style="display:flex;gap:10px;align-items:center"><label>年度B：</label><select id="cB" onchange="rCmp()"><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option selected>2025</option></select></div>
+      </div>
+      <div style="position:relative;width:100%;height:185px"><canvas id="cCmp"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>自然増減・社会増減の推移</h3>
+    <div class="nt">自然増減＝出生−死亡 ／ 社会増減＝転入−転出 ／ 西条市統計データ各年版</div>
+    <div class="leg"><span><i style="background:#1d9e75"></i>自然増減</span><span><i style="background:#378add"></i>社会増減</span></div>
+    <div style="position:relative;width:100%;height:220px"><canvas id="cNatSoc"></canvas></div>
+  </div>
+</div>
+
+<!-- 年齢構成 -->
+<div id="s-age" class="sec">
+  <div class="card">
+    <h3>年齢3区分別人口構成比の推移（%）</h3>
+    <div class="nt">各年3月末現在 / 西条市統計データ表10 <span class="note-badge">※2013・2014年は数値異常あり・原典確認推奨</span></div>
+    <div class="leg"><span><i style="background:#378add"></i>年少（0〜14歳）</span><span><i style="background:#1d9e75"></i>生産年齢（15〜64歳）</span><span><i style="background:#ef9f27"></i>老年（65歳以上）</span></div>
+    <div style="position:relative;width:100%;height:260px"><canvas id="cAge"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>老年・75歳以上人口の推移（人）</h3>
+      <div class="nt">各年3月末現在 / 西条市統計データ表10</div>
+      <div class="leg"><span><i style="background:#ef9f27"></i>65歳以上</span><span><i style="background:#e24b4a"></i>75歳以上</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cElderly"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>年少・生産年齢人口の推移（人）</h3>
+      <div class="nt">各年3月末現在 / 西条市統計データ表10</div>
+      <div class="leg"><span><i style="background:#378add"></i>年少（0〜14歳）</span><span><i style="background:#1d9e75"></i>生産年齢（15〜64歳）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cWorkYoung"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 産業・製造 -->
+<div id="s-ind" class="sec">
+  <div class="card">
+    <h3>製造品出荷額等の推移（百万円）</h3>
+    <div class="nt">従業者4人以上の事業所 / 工業統計調査・西条市統計データ表41 ／ ※2015年はデータなし</div>
+    <div class="br" id="indBr">
+      <button class="on" onclick="setIT('bar',this)">棒グラフ</button>
+      <button onclick="setIT('line',this)">折れ線</button>
+    </div>
+    <div style="position:relative;width:100%;height:260px"><canvas id="cManuf"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>製造業 事業所数・従業者数の推移</h3>
+      <div class="nt">従業者4人以上の事業所 / 西条市統計データ表41 ／ ※2015年欠損</div>
+      <div class="leg"><span><i style="background:#534ab7"></i>事業所数（左軸）</span><span><i style="background:#1d9e75"></i>従業者数（右軸）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cMBiz"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>付加価値額の推移（百万円）</h3>
+      <div class="nt">西条市統計データ表41 ／ ※2015年欠損</div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cMVA"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>市内総生産・市民所得・市民一人当たり所得の推移</h3>
+    <div class="nt">西条市統計データ表47・48 ／ ※〜2022年度のデータ（百万円 / 千円）</div>
+    <div class="br" id="gdpBr">
+      <button class="on" onclick="setGDP('gdp',this)">市内総生産（百万円）</button>
+      <button onclick="setGDP('income',this)">市民所得（百万円）</button>
+      <button onclick="setGDP('incomePC',this)">一人当たり所得（千円）</button>
+    </div>
+    <div style="position:relative;width:100%;height:240px"><canvas id="cGDP"></canvas></div>
+  </div>
+</div>
+
+<!-- 農林水産 -->
+<div id="s-agr" class="sec">
+  <div class="g2">
+    <div class="card">
+      <h3>水稲 作付面積・収穫量の推移</h3>
+      <div class="nt">西条市統計データ表23</div>
+      <div class="leg"><span><i style="background:#3b6d11"></i>作付面積・ha（左軸）</span><span><i style="background:#ef9f27"></i>収穫量・t（右軸）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cRice"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>はだか麦 作付面積・収穫量の推移</h3>
+      <div class="nt">西条市統計データ表23（日本一の生産地）</div>
+      <div class="leg"><span><i style="background:#3b6d11"></i>作付面積・ha（左軸）</span><span><i style="background:#ef9f27"></i>収穫量・t（右軸）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cBarley"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>農家数・農業従事者数の変化（農林業センサス 2015→2020）</h3>
+    <div class="nt">農林業センサス / 西条市統計データ表24・25　※センサスは5年ごと実施</div>
+    <div id="farmViz" style="padding:.5rem 0"></div>
+  </div>
+  <div class="card">
+    <h3>民有林面積・漁業経営体数の推移</h3>
+    <div class="nt">西条市統計データ表33・34</div>
+    <div class="leg"><span><i style="background:#3b6d11"></i>民有林面積・ha（左軸）</span><span><i style="background:#378add"></i>漁業経営体数（右軸・センサス年）</span></div>
+    <div style="position:relative;width:100%;height:220px"><canvas id="cForest"></canvas></div>
+  </div>
+</div>
+
+<!-- 財政・税収 -->
+<div id="s-fin" class="sec">
+  <div class="card">
+    <h3>一般会計 歳入・歳出決算額の推移（百万円）</h3>
+    <div class="nt">西条市統計データ表118・119</div>
+    <div class="leg"><span><i style="background:#378add"></i>歳入</span><span><i style="background:#e24b4a"></i>歳出</span></div>
+    <div style="position:relative;width:100%;height:260px"><canvas id="cFin"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>市税収入の内訳推移（百万円）</h3>
+      <div class="nt">西条市統計データ表121</div>
+      <div class="leg"><span><i style="background:#378add"></i>市民税</span><span><i style="background:#1d9e75"></i>固定資産税</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cTax"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>歳出 主要費目の推移（百万円）</h3>
+      <div class="nt">西条市統計データ表119</div>
+      <div class="leg"><span><i style="background:#534ab7"></i>民生費</span><span><i style="background:#ef9f27"></i>教育費</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cFinItems"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 教育・福祉 -->
+<div id="s-edu" class="sec">
+  <div class="card">
+    <h3>小・中・高等学校 児童生徒数の推移（人）</h3>
+    <div class="nt">西条市統計データ表99</div>
+    <div class="leg"><span><i style="background:#378add"></i>小学校</span><span><i style="background:#1d9e75"></i>中学校</span><span><i style="background:#534ab7"></i>高等学校</span></div>
+    <div style="position:relative;width:100%;height:260px"><canvas id="cSch"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>介護認定者数の推移（人）</h3>
+      <div class="nt">西条市統計データ表84 ／ ※2025〜2026年未収録</div>
+      <div class="leg"><span><i style="background:#e24b4a"></i>要介護（1〜5）</span><span><i style="background:#ef9f27"></i>要支援（1・2）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cCare"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>介護認定者数の内訳（積み上げ）</h3>
+      <div class="nt">西条市統計データ表84</div>
+      <div class="leg"><span><i style="background:#9fe1cb"></i>要支援1</span><span><i style="background:#1d9e75"></i>要支援2</span><span><i style="background:#fac775"></i>要介護1</span><span><i style="background:#ef9f27"></i>要介護2</span><span><i style="background:#e24b4a"></i>要介護3〜5</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cCareStack"></canvas></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>医療施設数の推移（施設）</h3>
+      <div class="nt">西条市統計データ表90 ／ ※〜2022年データ</div>
+      <div class="leg"><span><i style="background:#378add"></i>病院数</span><span><i style="background:#1d9e75"></i>診療所数（右軸）</span><span><i style="background:#ef9f27"></i>歯科診療所数（右軸）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cClinic"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>こども医療費助成・保育・児童の推移</h3>
+      <div class="nt">西条市統計データ表73・80</div>
+      <div class="br" id="chilBr">
+        <button class="on" onclick="setChild('hoiku',this)">保育所入所児童数</button>
+        <button onclick="setChild('kodomo',this)">こども医療費助成対象者</button>
+        <button onclick="setChild('jido',this)">児童手当受給世帯数</button>
+      </div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="cChild"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 観光・文化・防災 -->
+<div id="s-obs" class="sec">
+  <div class="card">
+    <h3>観光施設 利用者数の推移（人）</h3>
+    <div class="nt">西条市統計データ表117 ／ 2020〜2021年はコロナ禍の影響を反映</div>
+    <div class="leg"><span><i style="background:#0a5c4a"></i>本谷温泉館</span><span><i style="background:#378add"></i>四国鉄道文化館</span><span><i style="background:#ef9f27"></i>椿交流館</span><span><i style="background:#534ab7"></i>石鎚ふれあいの里</span></div>
+    <div style="position:relative;width:100%;height:260px"><canvas id="cTour"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>図書館 貸出冊数・蔵書数の推移</h3>
+      <div class="nt">西条市統計データ表102</div>
+      <div class="leg"><span><i style="background:#534ab7"></i>貸出冊数（左軸）</span><span><i style="background:#1d9e75"></i>蔵書数（右軸）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cLib"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>公民館利用者数の推移（人）</h3>
+      <div class="nt">西条市統計データ表103 ／ 2020〜2021年はコロナ禍の影響</div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cKom"></canvas></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>救急出動件数・火災発生件数の推移</h3>
+      <div class="nt">西条市統計データ表110・112</div>
+      <div class="leg"><span><i style="background:#e24b4a"></i>救急出動（左軸）</span><span><i style="background:#ef9f27"></i>火災件数（右軸）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cFire"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>交通事故・犯罪発生件数の推移</h3>
+      <div class="nt">西条市統計データ表113・114</div>
+      <div class="leg"><span><i style="background:#378add"></i>交通事故（左軸）</span><span><i style="background:#e24b4a"></i>犯罪発生（右軸）</span></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="cCrime"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>自動車等保有台数の推移（台）</h3>
+    <div class="nt">西条市統計データ表57</div>
+    <div class="leg"><span><i style="background:#555"></i>合計</span><span><i style="background:#1d9e75"></i>乗用車</span></div>
+    <div style="position:relative;width:100%;height:220px"><canvas id="cCar"></canvas></div>
+  </div>
+</div>
+
+<!-- 相関分析 -->
+<div id="s-cor" class="sec">
+  <div class="card">
+    <h3>相関分析（散布図）</h3>
+    <div class="nt">X軸・Y軸に指標を選んで相関を可視化。各点＝年度（2011〜2025）。データのある年度のみプロット。</div>
+    <div class="ctrl">
+      <label>X軸：</label>
+      <select id="corX" onchange="rScatter()">
+        <option value="pop">総人口</option><option value="oldR">高齢化率(%)</option>
+        <option value="manufShip" selected>製造品出荷額(百万円)</option>
+        <option value="taxTot">市税収入合計(百万円)</option>
+        <option value="elemStu">小学校児童数</option>
+        <option value="careAll">介護認定者数</option>
+        <option value="rescue">救急出動件数</option>
+        <option value="libLend">図書館貸出冊数</option>
+      </select>
+      <label>Y軸：</label>
+      <select id="corY" onchange="rScatter()">
+        <option value="pop">総人口</option><option value="oldR" selected>高齢化率(%)</option>
+        <option value="manufShip">製造品出荷額(百万円)</option>
+        <option value="taxTot">市税収入合計(百万円)</option>
+        <option value="elemStu">小学校児童数</option>
+        <option value="careAll">介護認定者数</option>
+        <option value="rescue">救急出動件数</option>
+        <option value="libLend">図書館貸出冊数</option>
+      </select>
+    </div>
+    <div class="corr-info" id="corrInfo">指標を選択してください。</div>
+    <div style="position:relative;width:100%;height:360px"><canvas id="cScat"></canvas></div>
+  </div>
+</div>
+
+<!-- ヒートマップ -->
+<div id="s-hm" class="sec">
+  <div class="card">
+    <h3>ヒートマップ — 年度 × 指標マトリクス</h3>
+    <div class="nt">各指標内で最小値〜最大値を正規化して色付け。緑が濃いほど高い値。セルをクリックで詳細表示。</div>
+    <div class="hm-detail" id="hmDetail">セルをクリックすると詳細が表示されます。</div>
+    <div class="hm-wrap" id="hmWrap"></div>
+  </div>
+</div>
+
+<!-- アニメーション -->
+<div id="s-anim" class="sec">
+  <div class="card">
+    <h3>時系列アニメーション</h3>
+    <div class="nt">▶ 再生で年度が自動進行 / スライダーで手動操作 / 現在年度は緑、それ以前はグレー表示</div>
+    <div class="ctrl" style="gap:10px">
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+      <input type="range" min="0" max="15" step="1" value="0" id="animSl" oninput="animSlChange()" style="flex:1;min-width:120px">
+      <span class="yr-badge" id="animYr">2011</span>
+      <label>指標：</label>
+      <select id="animM" onchange="initAnim()">
+        <option value="pop">総人口</option>
+        <option value="oldR">高齢化率(%)</option>
+        <option value="manufShip">製造品出荷額(百万円)</option>
+        <option value="elemStu">小学校児童数</option>
+        <option value="careAll">介護認定者数</option>
+        <option value="rescue">救急出動件数</option>
+        <option value="taxTot">市税収入合計(百万円)</option>
+      </select>
+    </div>
+    <div style="position:relative;width:100%;height:320px"><canvas id="cAnim"></canvas></div>
+    <div class="anim-stat" id="animStat"></div>
+  </div>
+</div>
+
+<div class="src">
+  出典：愛媛県西条市公式ホームページ 統計データ2011〜2026年版・住民基本台帳（令和8年3月末現在）<br>
+  ※数値は各年版PDF（表番号記載）から転記した実測値です。空白年度・異常値については備考欄記載の通りです。
+</div>
+</div>
+
+<script>
+const YEARS = [2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
+const Y15 = YEARS.slice(0,15); // 〜2025
+
+const D = {
+  pop:     [114384,114766,113859,113022,112215,111745,110887,109768,109071,108162,107052,105879,104655,103579,102379,101711],
+  male:    [54848,55128,54690,54323,53953,53832,53532,53032,52748,52330,51725,51288,50807,50362,49931,49589],
+  female:  [59536,59638,59169,58699,58262,57913,57355,56736,56323,55832,55327,54591,53848,53217,52448,52122],
+  hh:      [48465,49476,49514,49741,49964,50361,50569,50524,50699,50869,50763,50781,50787,50894,50882,50817],
+  birth:   [969,903,900,934,846,800,818,736,719,666,650,621,560,555,null,null],
+  death:   [1352,1359,1372,1414,1427,1375,1429,1397,1397,1522,1459,1642,1545,1649,null,null],
+  mvin:    [2793,2858,2966,3087,3173,2955,3191,3221,3446,2789,2740,3378,3379,3142,null,null],
+  mvout:   [2829,3047,3210,3091,3179,2846,3327,3374,3309,3071,3133,3623,3361,3030,null,null],
+  natChg:  [-383,-456,-472,-480,-581,-575,-611,-661,-678,-856,-809,-1021,-985,-1094,null,null],
+  socChg:  [-36,-189,-244,-4,-6,109,-136,-153,137,-282,-393,-245,18,112,null,null],
+  young:   [15443,15371,15158,14842,14576,14317,14024,13825,13575,13373,13122,12808,12419,11981,11615,11240],
+  work:    [68669,68029,67593,66195,64931,64014,63141,62010,60998,60791,59557,58532,57787,57309,56838,56089],
+  old:     [30115,30445,31252,32090,32856,33468,34029,34401,34662,34790,34824,34925,34749,34682,34471,34382],
+  old75:   [16740,17009,17335,17242,17355,17554,17901,17983,18149,18336,18083,18245,18743,19366,19816,20302],
+  youngR:  [13.5,13.5,13.3,13.1,13.0,12.8,12.6,12.5,12.4,12.3,12.2,12.1,11.8,11.5,11.3,11.1],
+  workR:   [60.1,59.8,59.3,58.5,57.8,57.3,56.8,56.3,55.8,55.8,55.4,55.1,55.1,55.1,55.2,55.1],
+  oldR:    [26.4,26.7,27.4,28.4,29.2,29.9,30.6,31.2,31.7,31.9,32.4,32.9,33.1,33.4,33.5,33.8],
+  manufBiz:[282,260,253,246,null,258,235,237,233,223,240,null,null,null,null,null],
+  manufWork:[10444,10277,9774,9000,null,8737,8961,9180,9395,9383,9226,null,null,null,null,null],
+  manufShip:[887724,885993,799571,859343,null,963346,719733,825158,845045,794701,727152,null,null,null,null,null],
+  manufVA: [174965,124477,152208,133104,null,188649,164916,137905,95879,121340,143817,null,null,null,null,null],
+  gdp:     [450980,405129,436427,431125,482382,365947,407955,388370,409610,405679,449495,509620,null,null,null,null],
+  income:  [355568,319867,324728,314421,314560,303236,314396,306488,308960,287299,317233,330238,null,null,null,null],
+  incomePC:[3181,2876,2942,2871,2908,2816,2943,2899,2926,2742,3058,3221,null,null,null,null],
+  riceArea:[3500,3460,3440,3400,3300,3220,3080,3120,2970,2890,2850,2860,2820,2830,null,null],
+  riceYield:[17300,17300,16800,16800,15800,16000,15500,15500,14000,13200,14700,15200,14400,14200,null,null],
+  barleyArea:[883,858,839,830,876,907,933,933,934,962,957,756,774,973,null,null],
+  barleyYield:[2580,1990,2390,2470,1900,1850,2430,2720,3460,3690,3380,2220,2150,1920,null,null],
+  forestPriv:[27786,27785,27785,27783,27914,28197,28197,28197,28197,27897,27893,27895,27895,27895,27896,null],
+  finIn:   [45264,46668,49249,49157,50910,51377,49781,51383,56265,61630,57583,59371,55902,59661,null,null],
+  finOut:  [42812,43959,43724,46419,47683,49265,47691,48827,53853,58409,53757,55190,52747,55987,null,null],
+  taxTot:  [16109,15751,16142,15595,15512,15429,15801,15777,16212,15796,15834,15894,16328,16960,null,null],
+  taxCiv:  [6156,6319,6602,6094,6052,5773,6009,5952,6143,5811,6062,5949,6186,5711,null,null],
+  taxProp: [8901,8388,8399,8382,8353,8496,8653,8701,8918,8821,8534,8647,8840,9968,null,null],
+  finMins: [13903,14875,14605,15998,16646,16521,17123,16986,17791,17835,20239,19637,20518,21130,null,null],
+  finEdu:  [3547,3542,3461,4653,5094,4583,5435,5217,6100,5048,4864,5206,4805,8317,null,null],
+  elemNum: [26,26,26,26,26,26,26,26,25,25,25,25,25,25,25,null],
+  elemStu: [6260,6132,6029,5874,5814,5770,5721,5756,5675,5621,5430,5317,5207,5114,4945,null],
+  elemTea: [444,443,441,435,442,444,449,455,456,463,464,462,459,467,464,null],
+  jrNum:   [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,null],
+  jrStu:   [3199,3194,3122,3040,2970,2917,2786,2690,2654,2653,2758,2745,2697,2644,2562,null],
+  jrTea:   [247,249,247,241,244,243,242,239,238,239,241,241,240,237,240,null],
+  hsNum:   [5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,null],
+  hsStu:   [2489,2439,2368,2387,2342,2328,2243,2189,2118,2068,1977,1975,1975,1997,1956,null],
+  hsTea:   [220,217,214,209,204,201,202,202,203,205,206,210,211,216,215,null],
+  careAll: [5924,6155,6289,6469,6722,6914,6907,7102,7223,7247,7165,7276,7372,7459,null,null],
+  careS1:  [812,863,973,1017,1013,1060,1061,1162,1263,1192,1237,1303,1337,1381,null,null],
+  careS2:  [678,723,793,817,866,926,962,1000,949,945,941,960,1056,1085,null,null],
+  careH1:  [1101,1197,1250,1307,1469,1455,1431,1524,1584,1639,1645,1687,1745,1750,null,null],
+  careH2:  [966,1002,981,1018,1040,1083,1129,1063,1133,1124,1064,1017,978,1008,null,null],
+  careH35: [2367,2370,2292,2310,2334,2390,2324,2353,2294,2347,2278,2309,2256,2235,null,null],
+  hospNum: [10,10,10,10,10,10,10,10,10,10,10,10,null,null,null,null],
+  clinicNum:[97,96,93,93,94,93,89,87,87,87,83,83,null,null,null,null],
+  dentNum: [55,55,55,55,55,55,55,53,52,52,53,51,null,null,null,null],
+  docNum:  [null,188,null,191,null,195,null,190,null,190,null,189,null,null,null,null],
+  kodomoCnt:[6315,6332,6223,10891,12404,13219,13569,13361,13159,12953,12725,12455,12047,14258,null,null],
+  kodomoAmt:[267448,264391,261188,289815,325706,372468,481595,514891,519077,400713,435990,425209,499431,554077,null,null],
+  hoikuStu:[2637,2680,2706,2740,2797,2695,2628,2493,2449,2177,2101,2016,2032,1919,null,null],
+  kodomoEn:[null,11,15,24,82,210,261,335,438,889,1033,1012,985,946,null,null],
+  jidoHH:  [10874,8254,8049,7942,7765,7605,7890,7724,7600,7468,7312,6980,6768,7874,null,null],
+  tour_ishi:[5812,5558,5207,4264,5151,4341,5465,4022,4598,3991,5167,4911,6866,8316,null,null],
+  tour_moto:[153042,144567,138566,134602,133962,76624,105001,111762,121770,19350,75645,78204,88729,93368,null,null],
+  tour_rail:[25002,28290,26946,58731,57461,49504,53895,52964,51761,30341,18774,45231,46242,46160,null,null],
+  tour_tsub:[102564,97797,94402,92641,96051,64405,86642,99679,109274,80128,49746,79745,88872,89075,null,null],
+  libLend: [820693,798163,795503,757208,777738,768216,752081,759882,742382,560309,458525,598600,586465,560740,null,null],
+  libStock:[462300,482258,501768,531651,553395,576436,598052,609676,631547,644944,644944,661952,655542,652964,null,null],
+  komMin:  [662631,702950,695185,695861,702101,708711,688461,656214,614371,324966,273966,388584,450489,465991,null,null],
+  fireNum: [48,37,41,34,30,22,30,23,25,20,22,24,21,27,33,null],
+  fireDmg: [148871,26300,137869,49128,41047,30784,185603,53134,20654,36973,34963,64154,66263,49764,28371,null],
+  rescue:  [4641,4716,4910,4981,4922,5130,5213,5375,5234,5054,5454,6476,6925,6978,7146,null],
+  accident:[672,646,580,481,409,435,580,317,250,196,198,182,179,166,null,null],
+  accDeath:[4,5,9,10,7,2,9,8,2,1,5,3,6,4,null,null],
+  crime:   [1165,1018,1103,1003,1018,788,822,659,670,463,440,441,634,527,null,null],
+  carAll:  [96631,97232,97145,97528,97803,97555,97632,97183,96998,97191,97308,96988,96875,96614,96437,null],
+  carPass: [60935,61942,62390,63146,63672,63875,64308,64360,64527,64877,64866,64562,64499,64233,64072,null],
+};
+
+const GC='rgba(0,0,0,0.07)',TC='#778';
+const charts={};
+
+function mk(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg);}
+function getIdx(yr){return YEARS.indexOf(Number(yr));}
+
+// null除去してスパン付きデータ生成
+function span(data,years){
+  const pts=[];
+  years.forEach((y,i)=>{if(data[i]!=null)pts.push({x:y,y:data[i]});});
+  return pts;
+}
+function spannedDS(data,years,color,label,extra={}){
+  const pts=span(data,years);
+  return {label,data:pts,borderColor:color,backgroundColor:color+'33',tension:0.3,pointRadius:3,fill:false,parsing:{xAxisKey:'x',yAxisKey:'y'},...extra};
+}
+
+function showS(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');btn.classList.add('on');
+  ({pop:()=>{rPop();rVit();rCmp();rNatSoc();},age:()=>{rAge();rElderly();rWorkYoung();},
+    ind:()=>{rManuf();rMBiz();rMVA();rGDP();},agr:()=>{rRice();rBarley();buildFarmViz();rForest();},
+    fin:()=>{rFin();rTax();rFinItems();},edu:()=>{rSch();rCare();rCareStack();rClinic();rChild();},
+    obs:()=>{rTour();rLib();rKom();rFire();rCrime();rCar();},
+    cor:()=>rScatter(),hm:()=>buildHM(),anim:()=>initAnim()
+  }[id]||Function)();
+}
+
+const scaleOpts=(label,color)=>({grid:{color:GC},ticks:{color:color||TC,font:{size:10}},title:{display:!!label,text:label||'',color:color||TC,font:{size:10}}});
+const baseOpts=(extra={})=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},...(extra.plugins||{})},scales:{x:{type:'linear',grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v}},...(extra.scales||{})}});
+
+function rPop(){
+  const i1=getIdx(document.getElementById('py1').value);
+  const i2=getIdx(document.getElementById('py2').value)+1;
+  const sl=YEARS.slice(i1,i2);
+  mk('cPop',{type:'bar',data:{labels:sl,datasets:[
+    {label:'総人口',data:D.pop.slice(i1,i2),backgroundColor:'#1d9e7599',yAxisID:'y',borderRadius:2},
+    {label:'世帯数',data:D.hh.slice(i1,i2),backgroundColor:'#378add99',yAxisID:'y2',borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toLocaleString('ja-JP')}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:11}}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>(v/10000).toFixed(1)+'万'},title:{display:true,text:'人口（人）',color:TC,font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#378add',font:{size:10},callback:v=>(v/10000).toFixed(1)+'万'},title:{display:true,text:'世帯数',color:'#378add',font:{size:10}}}}}});
+}
+
+function rVit(){
+  mk('cVit',{type:'line',data:{datasets:[
+    spannedDS(D.birth,YEARS,'#1d9e75','出生'),
+    spannedDS(D.death,YEARS,'#e24b4a','死亡',{borderDash:[5,3]}),
+    spannedDS(D.mvin, YEARS,'#378add','転入'),
+    spannedDS(D.mvout,YEARS,'#ef9f27','転出',{borderDash:[5,3]})
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.dataset.label+': '+c.raw.y.toLocaleString('ja-JP')}}},
+    scales:{x:{type:'linear',min:2011,max:2024,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:1}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rCmp(){
+  const A=getIdx(document.getElementById('cA').value);
+  const B=getIdx(document.getElementById('cB').value);
+  mk('cCmp',{type:'bar',data:{labels:['総人口(万)','世帯数(万)','男(万)','女(万)'],datasets:[
+    {label:YEARS[A]+'年',data:[+(D.pop[A]/10000).toFixed(2),+(D.hh[A]/10000).toFixed(2),+(D.male[A]/10000).toFixed(2),+(D.female[A]/10000).toFixed(2)],backgroundColor:'#1d9e7599',borderRadius:2},
+    {label:YEARS[B]+'年',data:[+(D.pop[B]/10000).toFixed(2),+(D.hh[B]/10000).toFixed(2),+(D.male[B]/10000).toFixed(2),+(D.female[B]/10000).toFixed(2)],backgroundColor:'#378add99',borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:11},color:TC}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10}}},y:{grid:{color:GC},ticks:{color:TC,font:{size:10}}}}}});
+}
+
+function rNatSoc(){
+  mk('cNatSoc',{type:'bar',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'自然増減',data:D.natChg.slice(0,14),backgroundColor:D.natChg.slice(0,14).map(v=>v>=0?'#1d9e7599':'#e24b4a99'),borderRadius:2},
+    {label:'社会増減',data:D.socChg.slice(0,14),backgroundColor:D.socChg.slice(0,14).map(v=>v>=0?'#378add99':'#ef9f2799'),borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:11},color:TC}},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toLocaleString('ja-JP')+'人'}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rAge(){
+  mk('cAge',{type:'bar',data:{labels:YEARS,datasets:[
+    {label:'年少(%)',data:D.youngR,backgroundColor:'#378add99'},
+    {label:'生産年齢(%)',data:D.workR,backgroundColor:'#1d9e7599'},
+    {label:'老年(%)',data:D.oldR,backgroundColor:'#ef9f2799'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.dataset.label.replace('(%)','') +': '+c.parsed.y.toFixed(1)+'%'}}},
+    scales:{x:{stacked:true,grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{stacked:true,max:100,grid:{color:GC},ticks:{color:TC,font:{size:11},callback:v=>v+'%'}}}}});
+}
+
+function rElderly(){
+  mk('cElderly',{type:'line',data:{datasets:[
+    spannedDS(D.old,YEARS,'#ef9f27','65歳以上',{fill:false,yAxisID:'y'}),
+    spannedDS(D.old75,YEARS,'#e24b4a','75歳以上',{borderDash:[5,3],fill:false,yAxisID:'y'})
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.dataset.label+': '+c.raw.y.toLocaleString('ja-JP')+'人'}}},
+    scales:{x:{type:'linear',min:2011,max:2026,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:2}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rWorkYoung(){
+  mk('cWorkYoung',{type:'line',data:{datasets:[
+    spannedDS(D.young,YEARS,'#378add','年少（0〜14歳）',{fill:false}),
+    spannedDS(D.work,YEARS,'#1d9e75','生産年齢（15〜64歳）',{fill:false,yAxisID:'y2'})
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.dataset.label+': '+c.raw.y.toLocaleString('ja-JP')+'人'}}},
+    scales:{x:{type:'linear',min:2011,max:2026,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:2}},
+      y:{grid:{color:GC},ticks:{color:'#378add',font:{size:10},callback:v=>v.toLocaleString('ja-JP')},title:{display:true,text:'年少（人）',color:'#378add',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#1d9e75',font:{size:10},callback:v=>(v/10000).toFixed(1)+'万'},title:{display:true,text:'生産年齢（人）',color:'#1d9e75',font:{size:10}}}}}});
+}
+
+let indType='bar';
+function setIT(t,btn){indType=t;document.querySelectorAll('#indBr button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rManuf();}
+function rManuf(){
+  const pts=span(D.manufShip,YEARS);
+  mk('cManuf',{type:indType,data:{datasets:[{label:'製造品出荷額等(百万円)',data:pts,backgroundColor:'#534ab799',borderColor:'#534ab7',borderRadius:indType==='bar'?2:0,tension:0.3,fill:indType==='line',pointRadius:4,parsing:{xAxisKey:'x',yAxisKey:'y'}}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.raw.y.toLocaleString('ja-JP')+'百万円'}}},
+      scales:{x:{type:'linear',min:2010,max:2022,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:1}},
+        y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rMBiz(){
+  mk('cMBiz',{type:'line',data:{datasets:[
+    spannedDS(D.manufBiz,YEARS,'#534ab7','事業所数',{fill:false,yAxisID:'y'}),
+    spannedDS(D.manufWork,YEARS,'#1d9e75','従業者数',{borderDash:[5,3],fill:false,yAxisID:'y2'})
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.dataset.label+': '+c.raw.y.toLocaleString('ja-JP')}}},
+    scales:{x:{type:'linear',min:2010,max:2022,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:1}},
+      y:{grid:{color:GC},ticks:{color:'#534ab7',font:{size:10}},title:{display:true,text:'事業所数',color:'#534ab7',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#1d9e75',font:{size:10}},title:{display:true,text:'従業者数',color:'#1d9e75',font:{size:10}}}}}});
+}
+
+function rMVA(){
+  const pts=span(D.manufVA,YEARS);
+  mk('cMVA',{type:'bar',data:{datasets:[{label:'付加価値額',data:pts,backgroundColor:'#1d9e7599',borderRadius:2,parsing:{xAxisKey:'x',yAxisKey:'y'}}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.raw.y.toLocaleString('ja-JP')+'百万円'}}},
+      scales:{x:{type:'linear',min:2010,max:2022,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:1}},
+        y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+let gdpKey='gdp';
+function setGDP(k,btn){gdpKey=k;document.querySelectorAll('#gdpBr button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rGDP();}
+function rGDP(){
+  const kl={gdp:'市内総生産（百万円）',income:'市民所得（百万円）',incomePC:'一人当たり所得（千円）'};
+  const pts=span(D[gdpKey],YEARS);
+  mk('cGDP',{type:'line',data:{datasets:[{label:kl[gdpKey],data:pts,borderColor:'#534ab7',backgroundColor:'#534ab722',tension:0.3,fill:true,pointRadius:3,parsing:{xAxisKey:'x',yAxisKey:'y'}}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.raw.y.toLocaleString('ja-JP')}}},
+      scales:{x:{type:'linear',min:2010,max:2022,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:1}},
+        y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rRice(){
+  mk('cRice',{type:'bar',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'作付面積(ha)',data:D.riceArea.slice(0,14),backgroundColor:'#3b6d1199',yAxisID:'y',borderRadius:2},
+    {label:'収穫量(t)',data:D.riceYield.slice(0,14),backgroundColor:'#ef9f2799',yAxisID:'y2',borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toLocaleString('ja-JP')}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:'#3b6d11',font:{size:10},callback:v=>v+'ha'},title:{display:true,text:'作付面積',color:'#3b6d11',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#ef9f27',font:{size:10},callback:v=>v+'t'},title:{display:true,text:'収穫量',color:'#ef9f27',font:{size:10}}}}}});
+}
+
+function rBarley(){
+  mk('cBarley',{type:'bar',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'作付面積(ha)',data:D.barleyArea.slice(0,14),backgroundColor:'#3b6d1199',yAxisID:'y',borderRadius:2},
+    {label:'収穫量(t)',data:D.barleyYield.slice(0,14),backgroundColor:'#ef9f2799',yAxisID:'y2',borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toLocaleString('ja-JP')}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:'#3b6d11',font:{size:10},callback:v=>v+'ha'},title:{display:true,text:'作付面積',color:'#3b6d11',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#ef9f27',font:{size:10},callback:v=>v+'t'},title:{display:true,text:'収穫量',color:'#ef9f27',font:{size:10}}}}}});
+}
+
+function buildFarmViz() {
+  var el = document.getElementById('farmViz');
+  if (!el) return;
+  var data = [
+    { label: '総農家数',         y2015: 3879, y2020: 3172, color: '#3b6d11', unit: '戸' },
+    { label: '販売農家数',       y2015: 2616, y2020: 2027, color: '#639922', unit: '戸' },
+    { label: '農業従事者数',     y2015: 6261, y2020: 4562, color: '#0a5c4a', unit: '人' },
+    { label: '基幹的農業従事者', y2015: 3153, y2020: 2521, color: '#1d9e75', unit: '人' }
+  ];
+  var maxVal = 6261;
+  var html = '<div style="display:grid;gap:14px">';
+  data.forEach(function(d) {
+    var pct2015 = (d.y2015 / maxVal * 100).toFixed(1);
+    var pct2020 = (d.y2020 / maxVal * 100).toFixed(1);
+    var change = d.y2020 - d.y2015;
+    var changePct = (change / d.y2015 * 100).toFixed(1);
+    var cColor = change < 0 ? '#c0392b' : '#1d9e75';
+    var cBg = change < 0 ? '#fdecea' : '#e8f8f0';
+    var sign = change < 0 ? '' : '+';
+    html += '<div style="background:#f8fdf9;border:1px solid #c8e4da;border-radius:10px;padding:12px 16px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    html += '<span style="font-size:12px;font-weight:700;color:#1a3a30">' + d.label + '</span>';
+    html += '<span style="font-size:11px;font-weight:700;color:' + cColor + ';background:' + cBg + ';padding:2px 8px;border-radius:10px">';
+    html += sign + changePct + '% (' + sign + change.toLocaleString('ja-JP') + d.unit + ')';
+    html += '</span></div>';
+    html += '<div style="display:grid;grid-template-columns:70px 1fr 70px;align-items:center;gap:8px;margin-bottom:6px">';
+    html += '<span style="font-size:11px;color:#556;text-align:right">2015年</span>';
+    html += '<div style="background:#e0ede7;border-radius:4px;height:18px;position:relative">';
+    html += '<div style="background:' + d.color + ';width:' + pct2015 + '%;height:100%;border-radius:4px"></div></div>';
+    html += '<span style="font-size:12px;font-weight:700;color:' + d.color + '">' + d.y2015.toLocaleString('ja-JP') + '<span style="font-size:10px;font-weight:400;margin-left:2px">' + d.unit + '</span></span>';
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:70px 1fr 70px;align-items:center;gap:8px">';
+    html += '<span style="font-size:11px;color:#556;text-align:right">2020年</span>';
+    html += '<div style="background:#e0ede7;border-radius:4px;height:18px;position:relative">';
+    html += '<div style="background:' + d.color + ';opacity:0.6;width:' + pct2020 + '%;height:100%;border-radius:4px"></div></div>';
+    html += '<span style="font-size:12px;font-weight:700;color:' + d.color + ';opacity:.75">' + d.y2020.toLocaleString('ja-JP') + '<span style="font-size:10px;font-weight:400;margin-left:2px">' + d.unit + '</span></span>';
+    html += '</div></div>';
+  });
+  html += '<div style="background:#0a5c4a;color:#fff;border-radius:10px;padding:14px 18px">';
+  html += '<div style="font-size:11px;opacity:.75;margin-bottom:8px;letter-spacing:.06em">5年間の変化サマリー（2015→2020）</div>';
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">';
+  var summary = [
+    {l:'総農家数', v:'−707戸', p:'▼18.2%'},
+    {l:'販売農家数', v:'−589戸', p:'▼22.5%'},
+    {l:'農業従事者数', v:'−1,699人', p:'▼27.1%'},
+    {l:'基幹的従事者', v:'−632人', p:'▼20.0%'}
+  ];
+  summary.forEach(function(s) {
+    html += '<div style="text-align:center">';
+    html += '<div style="font-size:10px;opacity:.7;margin-bottom:4px">' + s.l + '</div>';
+    html += '<div style="font-size:16px;font-weight:700">' + s.v + '</div>';
+    html += '<div style="font-size:10px;opacity:.65">' + s.p + '</div>';
+    html += '</div>';
+  });
+  html += '</div></div></div>';
+  el.innerHTML = html;
+}
+function rForest(){
+  const fPts=span(D.forestPriv,YEARS);
+  const fishPts=[{x:2013,y:187},{x:2018,y:113},{x:2023,y:90}];
+  mk('cForest',{type:'line',data:{datasets:[
+    {label:'民有林(ha)',data:fPts,borderColor:'#3b6d11',backgroundColor:'#3b6d1122',tension:0.3,fill:true,pointRadius:3,yAxisID:'y',parsing:{xAxisKey:'x',yAxisKey:'y'}},
+    {label:'漁業経営体数',data:fishPts,borderColor:'#378add',tension:0,pointRadius:8,fill:false,yAxisID:'y2',parsing:{xAxisKey:'x',yAxisKey:'y'},showLine:true}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.dataset.label+': '+c.raw.y.toLocaleString('ja-JP')}}},
+    scales:{x:{type:'linear',min:2011,max:2025,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:2}},
+      y:{grid:{color:GC},ticks:{color:'#3b6d11',font:{size:10},callback:v=>v.toLocaleString('ja-JP')},title:{display:true,text:'民有林(ha)',color:'#3b6d11',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#378add',font:{size:10}},title:{display:true,text:'漁業経営体数',color:'#378add',font:{size:10}}}}}});
+}
+
+function rFin(){
+  const pts_in=span(D.finIn,YEARS), pts_out=span(D.finOut,YEARS);
+  mk('cFin',{type:'line',data:{datasets:[
+    {label:'歳入',data:pts_in,borderColor:'#378add',tension:0.3,pointRadius:3,fill:false,parsing:{xAxisKey:'x',yAxisKey:'y'}},
+    {label:'歳出',data:pts_out,borderColor:'#e24b4a',tension:0.3,pointRadius:3,fill:false,borderDash:[5,3],parsing:{xAxisKey:'x',yAxisKey:'y'}}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.x+'年',label:c=>' '+c.dataset.label+': '+c.raw.y.toLocaleString('ja-JP')+'百万円'}}},
+    scales:{x:{type:'linear',min:2011,max:2024,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v,stepSize:1}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rTax(){
+  mk('cTax',{type:'bar',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'市民税',data:D.taxCiv.slice(0,14),backgroundColor:'#378add99',borderRadius:2},
+    {label:'固定資産税',data:D.taxProp.slice(0,14),backgroundColor:'#1d9e7599',borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:11},color:TC}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rFinItems(){
+  mk('cFinItems',{type:'line',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'民生費',data:D.finMins.slice(0,14),borderColor:'#534ab7',tension:0.3,pointRadius:3,fill:false},
+    {label:'教育費',data:D.finEdu.slice(0,14),borderColor:'#ef9f27',tension:0.3,pointRadius:3,fill:false,borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:11},color:TC}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rSch(){
+  mk('cSch',{type:'line',data:{labels:YEARS.slice(0,15),datasets:[
+    {label:'小学校',data:D.elemStu.slice(0,15),borderColor:'#378add',tension:0.3,pointRadius:2,fill:false},
+    {label:'中学校',data:D.jrStu.slice(0,15),borderColor:'#1d9e75',tension:0.3,pointRadius:2,fill:false,borderDash:[5,3]},
+    {label:'高等学校',data:D.hsStu.slice(0,15),borderColor:'#534ab7',tension:0.3,pointRadius:2,fill:false,borderDash:[3,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:11},color:TC}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rCare(){
+  const careH=D.careH1.slice(0,14).map((v,i)=>v+D.careH2[i]+D.careH35[i]);
+  const careS=D.careS1.slice(0,14).map((v,i)=>v+D.careS2[i]);
+  mk('cCare',{type:'line',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'要介護（1〜5）',data:careH,borderColor:'#e24b4a',tension:0.3,pointRadius:2,fill:false},
+    {label:'要支援（1・2）',data:careS,borderColor:'#ef9f27',tension:0.3,pointRadius:2,fill:false,borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rCareStack(){
+  mk('cCareStack',{type:'bar',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'要支援1',data:D.careS1.slice(0,14),backgroundColor:'#9fe1cb99',borderRadius:0},
+    {label:'要支援2',data:D.careS2.slice(0,14),backgroundColor:'#1d9e7599'},
+    {label:'要介護1',data:D.careH1.slice(0,14),backgroundColor:'#fac77599'},
+    {label:'要介護2',data:D.careH2.slice(0,14),backgroundColor:'#ef9f2799'},
+    {label:'要介護3〜5',data:D.careH35.slice(0,14),backgroundColor:'#e24b4a99'}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:10},color:TC,boxWidth:10}}},
+    scales:{x:{stacked:true,grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{stacked:true,grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rClinic(){
+  mk('cClinic',{type:'line',data:{labels:YEARS.slice(0,12),datasets:[
+    {label:'病院数',data:D.hospNum.slice(0,12),borderColor:'#378add',tension:0.1,pointRadius:4,fill:false,yAxisID:'y'},
+    {label:'診療所数',data:D.clinicNum.slice(0,12),borderColor:'#1d9e75',tension:0.3,pointRadius:3,fill:false,yAxisID:'y2'},
+    {label:'歯科診療所数',data:D.dentNum.slice(0,12),borderColor:'#ef9f27',tension:0.3,pointRadius:3,fill:false,yAxisID:'y2',borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:10},color:TC,boxWidth:10}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:'#378add',font:{size:10}},title:{display:true,text:'病院数',color:'#378add',font:{size:9}},min:8,max:12},
+      y2:{position:'right',grid:{display:false},ticks:{color:TC,font:{size:10}},title:{display:true,text:'診療所・歯科数',color:TC,font:{size:9}}}}}});
+}
+
+let childKey='hoiku';
+const CHILD_D={hoiku:{d:D.hoikuStu,l:'保育所入所児童数（人）',c:'#378add'},kodomo:{d:D.kodomoCnt,l:'こども医療費助成対象者数（人）',c:'#1d9e75'},jido:{d:D.jidoHH,l:'児童手当受給者世帯数（世帯）',c:'#534ab7'}};
+function setChild(k,btn){childKey=k;document.querySelectorAll('#chilBr button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');rChild();}
+function rChild(){
+  const w=CHILD_D[childKey];
+  mk('cChild',{type:'line',data:{labels:YEARS.slice(0,14),datasets:[{label:w.l,data:w.d.slice(0,14),borderColor:w.c,backgroundColor:w.c+'22',tension:0.3,fill:true,pointRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+        y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rTour(){
+  mk('cTour',{type:'bar',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'本谷温泉館',data:D.tour_moto.slice(0,14),backgroundColor:'#0a5c4a99',borderRadius:2},
+    {label:'四国鉄道文化館',data:D.tour_rail.slice(0,14),backgroundColor:'#378add99',borderRadius:2},
+    {label:'椿交流館',data:D.tour_tsub.slice(0,14),backgroundColor:'#ef9f2799',borderRadius:2},
+    {label:'石鎚ふれあいの里',data:D.tour_ishi.slice(0,14),backgroundColor:'#534ab799',borderRadius:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:10},color:TC,boxWidth:10}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rLib(){
+  mk('cLib',{type:'line',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'貸出冊数（左軸）',data:D.libLend.slice(0,14),borderColor:'#534ab7',tension:0.3,pointRadius:2,fill:false,yAxisID:'y'},
+    {label:'蔵書数（右軸）',data:D.libStock.slice(0,14),borderColor:'#1d9e75',tension:0.3,pointRadius:2,fill:false,yAxisID:'y2',borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:'#534ab7',font:{size:10},callback:v=>v.toLocaleString('ja-JP')}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#1d9e75',font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rKom(){
+  mk('cKom',{type:'bar',data:{labels:YEARS.slice(0,14),datasets:[{label:'公民館利用者数（人）',data:D.komMin.slice(0,14),backgroundColor:'#1d9e7566',borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.y.toLocaleString('ja-JP')+'人'}}},
+      scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+        y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+function rFire(){
+  mk('cFire',{type:'line',data:{labels:YEARS.slice(0,15),datasets:[
+    {label:'救急出動件数（左軸）',data:D.rescue.slice(0,15),borderColor:'#e24b4a',tension:0.3,pointRadius:2,fill:false,yAxisID:'y'},
+    {label:'火災件数（右軸）',data:D.fireNum.slice(0,15),borderColor:'#ef9f27',tension:0.3,pointRadius:3,fill:false,yAxisID:'y2',borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:'#e24b4a',font:{size:10}},title:{display:true,text:'救急出動（件）',color:'#e24b4a',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#ef9f27',font:{size:10}},title:{display:true,text:'火災（件）',color:'#ef9f27',font:{size:10}}}}}});
+}
+
+function rCrime(){
+  mk('cCrime',{type:'line',data:{labels:YEARS.slice(0,14),datasets:[
+    {label:'交通事故（左軸）',data:D.accident.slice(0,14),borderColor:'#378add',tension:0.3,pointRadius:2,fill:false,yAxisID:'y'},
+    {label:'犯罪発生（右軸）',data:D.crime.slice(0,14),borderColor:'#e24b4a',tension:0.3,pointRadius:2,fill:false,yAxisID:'y2',borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:'#378add',font:{size:10}},title:{display:true,text:'交通事故（件）',color:'#378add',font:{size:10}}},
+      y2:{position:'right',grid:{display:false},ticks:{color:'#e24b4a',font:{size:10}},title:{display:true,text:'犯罪（件）',color:'#e24b4a',font:{size:10}}}}}});
+}
+
+function rCar(){
+  mk('cCar',{type:'line',data:{labels:YEARS.slice(0,15),datasets:[
+    {label:'合計',data:D.carAll.slice(0,15),borderColor:'#555',tension:0.3,pointRadius:2,fill:false},
+    {label:'乗用車',data:D.carPass.slice(0,15),borderColor:'#1d9e75',tension:0.3,pointRadius:2,fill:false,borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{size:11},color:TC}}},
+    scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+      y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+}
+
+// 相関分析
+const MET={
+  pop:{d:D.pop,l:'総人口（人）'},oldR:{d:D.oldR,l:'高齢化率（%）'},
+  manufShip:{d:D.manufShip,l:'製造品出荷額（百万円）'},taxTot:{d:D.taxTot,l:'市税収入合計（百万円）'},
+  elemStu:{d:D.elemStu,l:'小学校児童数（人）'},careAll:{d:D.careAll,l:'介護認定者数（人）'},
+  rescue:{d:D.rescue,l:'救急出動件数（件）'},libLend:{d:D.libLend,l:'図書館貸出冊数（冊）'}
+};
+function pearson(xa,ya){
+  const n=xa.length,mx=xa.reduce((a,b)=>a+b,0)/n,my=ya.reduce((a,b)=>a+b,0)/n;
+  const num=xa.reduce((s,x,i)=>s+(x-mx)*(ya[i]-my),0);
+  const dx=Math.sqrt(xa.reduce((s,x)=>s+(x-mx)**2,0)),dy=Math.sqrt(ya.reduce((s,y)=>s+(y-my)**2,0));
+  return dx*dy===0?0:num/(dx*dy);
+}
+function rScatter(){
+  const kx=document.getElementById('corX').value,ky=document.getElementById('corY').value;
+  const mx=MET[kx],my=MET[ky];
+  const pts=[];
+  YEARS.forEach((yr,i)=>{if(mx.d[i]!=null&&my.d[i]!=null)pts.push({x:mx.d[i],y:my.d[i],yr});});
+  const r=pearson(pts.map(p=>p.x),pts.map(p=>p.y));
+  const s=Math.abs(r)>0.8?'強い相関':Math.abs(r)>0.5?'中程度の相関':'弱い相関';
+  document.getElementById('corrInfo').textContent='相関係数 r = '+r.toFixed(3)+'　（'+s+'）　n='+pts.length+'年度';
+  mk('cScat',{type:'scatter',data:{datasets:[{label:'年度',data:pts,backgroundColor:'#0a5c4acc',pointRadius:7,pointHoverRadius:9}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:20},
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i[0].raw.yr+'年',label:c=>[mx.l+': '+c.raw.x.toLocaleString('ja-JP'),my.l+': '+c.raw.y.toLocaleString('ja-JP')]}}},
+      scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10}},title:{display:true,text:mx.l,color:TC,font:{size:11}}},
+        y:{grid:{color:GC},ticks:{color:TC,font:{size:10}},title:{display:true,text:my.l,color:TC,font:{size:11}}}}}});
+}
+
+// ヒートマップ
+const HM_ROWS=[
+  {k:'pop',l:'人口(万人)',f:v=>(v/10000).toFixed(2)},
+  {k:'hh',l:'世帯数(万)',f:v=>(v/10000).toFixed(2)},
+  {k:'oldR',l:'高齢化率(%)',f:v=>v.toFixed(1)},
+  {k:'manufShip',l:'製造出荷(億円)',f:v=>v?Math.round(v/100):'-'},
+  {k:'taxTot',l:'市税収入(億円)',f:v=>v?Math.round(v/100):'-'},
+  {k:'finIn',l:'歳入(億円)',f:v=>v?Math.round(v/100):'-'},
+  {k:'elemStu',l:'小学生数(百人)',f:v=>Math.round(v/100)},
+  {k:'careAll',l:'介護認定(百人)',f:v=>v?Math.round(v/100):'-'},
+  {k:'rescue',l:'救急出動(百件)',f:v=>v?Math.round(v/100):'-'},
+  {k:'libLend',l:'図書館貸出(万冊)',f:v=>v?Math.round(v/10000):'-'},
+  {k:'komMin',l:'公民館利用(万人)',f:v=>v?Math.round(v/10000):'-'},
+  {k:'fireNum',l:'火災件数',f:v=>v!=null?v:'-'}
+];
+function buildHM(){
+  const wrap=document.getElementById('hmWrap');
+  const mm=HM_ROWS.map(r=>{const vals=D[r.k].filter(v=>v!=null);return{min:Math.min(...vals),max:Math.max(...vals)};});
+  let h='<table class="hm"><thead><tr><th class="rh">指標</th>';
+  YEARS.forEach(y=>{h+='<th>'+y+'</th>';});h+='</tr></thead><tbody>';
+  HM_ROWS.forEach((row,ri)=>{
+    const{min,max}=mm[ri];h+='<tr><th class="rh">'+row.l+'</th>';
+    D[row.k].forEach((v,yi)=>{
+      if(v==null){h+='<td style="background:#eee;color:#bbb">-</td>';return;}
+      const norm=max===min?0.5:(v-min)/(max-min);
+      const rr=Math.round(10+(1-norm)*40),g=Math.round(80+norm*120),b=Math.round(60+norm*40);
+      h+='<td style="background:rgb('+rr+','+g+','+b+');color:#fff" onclick="hmClick(\''+row.l+'\','+YEARS[yi]+',\''+row.f(v)+'\')">'+row.f(v)+'</td>';
+    });h+='</tr>';
+  });h+='</tbody></table>';wrap.innerHTML=h;
+}
+function hmClick(l,yr,v){document.getElementById('hmDetail').textContent=yr+'年 / '+l+' : '+v;}
+
+// アニメーション
+let animTimer=null,animIdx=0;
+function togglePlay(){
+  const btn=document.getElementById('playBtn');
+  if(animTimer){clearInterval(animTimer);animTimer=null;btn.textContent='▶';}
+  else{
+    btn.textContent='⏸';
+    animTimer=setInterval(()=>{
+      animIdx=(animIdx+1)%16;
+      document.getElementById('animSl').value=animIdx;
+      document.getElementById('animYr').textContent=YEARS[animIdx];
+      rAnim();
+      if(animIdx===15){clearInterval(animTimer);animTimer=null;btn.textContent='▶';}
+    },600);
+  }
+}
+function animSlChange(){animIdx=+document.getElementById('animSl').value;document.getElementById('animYr').textContent=YEARS[animIdx];rAnim();}
+function initAnim(){animIdx=0;document.getElementById('animSl').value=0;document.getElementById('animYr').textContent=YEARS[0];rAnim();}
+function rAnim(){
+  const k=document.getElementById('animM').value;
+  const m=MET[k];
+  const colors=m.d.map((v,i)=>{if(v==null)return'#ddd';return i<=animIdx?'#0a5c4a':'#cce5dd';});
+  mk('cAnim',{type:'bar',data:{labels:YEARS,datasets:[{data:m.d,backgroundColor:colors,borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw!=null?' '+c.raw.toLocaleString('ja-JP'):' データなし'}}},
+      scales:{x:{grid:{color:GC},ticks:{color:TC,font:{size:10},autoSkip:false,maxRotation:45}},
+        y:{grid:{color:GC},ticks:{color:TC,font:{size:10},callback:v=>v.toLocaleString('ja-JP')}}}}});
+  const cur=m.d[animIdx],first=m.d[0];
+  const pct=cur!=null&&first!=null?((cur-first)/first*100).toFixed(1):'-';
+  const validData=m.d.filter(v=>v!=null);
+  const maxV=Math.max(...validData),minV=Math.min(...validData);
+  const maxYr=YEARS[m.d.indexOf(maxV)],minYr=YEARS[m.d.indexOf(minV)];
+  document.getElementById('animStat').innerHTML=
+    '<span>'+YEARS[animIdx]+'年：<strong>'+(cur!=null?cur.toLocaleString('ja-JP'):'データなし')+'</strong></span>'+
+    (cur!=null?'<span>2011年比：<strong>'+(pct>0?'+':'')+pct+'%</strong></span>':'')+
+    '<span>最大値：<strong>'+maxV.toLocaleString('ja-JP')+'</strong>（'+maxYr+'年）</span>'+
+    '<span>最小値：<strong>'+minV.toLocaleString('ja-JP')+'</strong>（'+minYr+'年）</span>';
+}
+
+// CSV出力
+function dlCSV(key){
+  const rows=[['年度','総人口','世帯数','男','女','出生','死亡','転入','転出','自然増減','社会増減']];
+  YEARS.forEach((y,i)=>rows.push([y,D.pop[i],D.hh[i],D.male[i],D.female[i],D.birth[i]??'',D.death[i]??'',D.mvin[i]??'',D.mvout[i]??'',D.natChg[i]??'',D.socChg[i]??'']));
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='saijo_pop_data.csv';a.click();
+}
+
+window.addEventListener('load',()=>{rPop();rVit();rCmp();rNatSoc();});
+</script>
+</body>
+</html>
