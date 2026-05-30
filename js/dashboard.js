@@ -1074,24 +1074,40 @@ function dlCSV() {
 /* =====================================================
    グラフ画像ダウンロード
    ===================================================== */
-function downloadChart(canvasId, filename) {
+function downloadChart(canvasId) {
+  // Chart.js インスタンスが存在するか確認（未描画タブ対策）
+  const chart = charts[canvasId];
+  if (!chart) {
+    alert('グラフがまだ描画されていません。\nタブを一度開いてからもう一度お試しください。');
+    return;
+  }
+
+  // カードの <h3> からグラフタイトルを動的取得
   const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
+  const title = canvas.closest('.card')?.querySelector('h3')?.textContent?.trim() || canvasId;
+
+  // 年月日を YYYYMMDD 形式で生成
+  const d = new Date();
+  const dateStr = d.getFullYear()
+    + String(d.getMonth() + 1).padStart(2, '0')
+    + String(d.getDate()).padStart(2, '0');
+
+  // Chart.js の toBase64Image() で PNG データを取得してダウンロード
   const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
-  link.download = (filename || canvasId) + '.png';
+  link.href     = chart.toBase64Image();
+  link.download = '西条市統計_' + title + '_' + dateStr + '.png';
   link.click();
 }
 
-// canvas を持つカードすべてに画像DLボタンを追加
+// canvas を持つカードだけに画像DLボタンを追加（canvasなし＝ヒートマップ等はスキップ）
 function addDownloadButtons() {
   document.querySelectorAll('.card').forEach(card => {
     const canvas = card.querySelector('canvas');
-    if (!canvas) return;
+    if (!canvas) return; // グラフのないカードはボタン追加しない
     const btn = document.createElement('button');
-    btn.className = 'dl-img-btn';
+    btn.className   = 'dl-img-btn';
     btn.textContent = '📷 画像保存';
-    btn.onclick = () => downloadChart(canvas.id, 'saijo_' + canvas.id);
+    btn.onclick = () => downloadChart(canvas.id);
     card.appendChild(btn);
   });
 }
